@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة العداد والإعلانات</title>
+    <title>منصة ألعاب سعيد الترفيهية</title>
     <style>
         * {
             box-sizing: border-box;
@@ -18,14 +18,34 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #f8fafc;
+            margin-bottom: 5px;
+        }
+
+        .online-status {
+            font-size: 13px;
+            color: #22c55e;
+            background: #13221g;
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid #15803d;
         }
 
         /* حاوية الإعلان */
         .ad-container {
-            margin: 15px 0;
+            margin: 10px 0;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -33,51 +53,100 @@
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #1f2d4a;
+            max-width: 100%;
         }
 
-        /* صندوق العداد التفاعلي */
-        .clicker-box {
-            background-color: #131b2e;
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
+        /* شبكة الألعاب */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-            border: 2px solid #2563eb;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s ease, background-color 0.2s ease;
+            max-width: 500px;
             margin: 15px 0;
         }
 
-        .clicker-box:active {
-            transform: scale(0.95);
-            background-color: #1a2642;
+        .game-card {
+            background-color: #131b2e;
+            padding: 20px;
+            border-radius: 14px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid #1f2d4a;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
 
-        h1 {
-            font-size: 20px;
-            margin-bottom: 20px;
+        .game-card:hover {
+            border-color: #2563eb;
+            transform: translateY(-3px);
+            background-color: #18233f;
+        }
+
+        .game-card h3 {
+            font-size: 16px;
             color: #f8fafc;
+            margin-bottom: 8px;
         }
 
-        .counter-display {
-            font-size: 60px;
-            font-weight: bold;
-            color: #22c55e;
-        }
-
-        .hint {
-            font-size: 13px;
+        .game-card p {
+            font-size: 12px;
             color: #94a3b8;
+        }
+
+        /* شاشة اللعبة */
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background: #131b2e;
+            padding: 20px;
+            border-radius: 16px;
+            border: 2px solid #2563eb;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        canvas {
+            background: #000;
+            border-radius: 8px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            max-width: 100%;
+        }
+
+        .back-btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
             margin-top: 15px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: #dc2626;
+        }
+
+        .score-board {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #22c55e;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
 
-    <!-- إعلان Adsterra (مقاس 300x250) -->
+    <header>
+        <h1>منصة ألعاب سعيد</h1>
+        <div class="online-status">������ متواجد معك الآن <span id="onlineCount">12</span> شخص أونلاين</div>
+    </header>
+
+    <!-- إعلان Adsterra العلوي -->
     <div class="ad-container">
         <script>
             atOptions = {
@@ -91,61 +160,293 @@
         <script src="https://www.highperformanceformat.com/e4b3426014b6de4b69856962027e3a76/invoke.js"></script>
     </div>
 
-    <!-- صندوق العداد -->
-    <div class="clicker-box" onclick="incrementCounter()">
-        <h1>اضغط هنا لزيادة العداد</h1>
-        <div class="counter-display" id="counter">0</div>
-        <div class="hint">كل ضغطة تحتسب وتصدر صوتاً!</div>
+    <!-- القائمة الرئيسية لاختيار الألعاب -->
+    <div class="games-grid" id="menuGrid">
+        <div class="game-card" onclick="openGame('snake')">
+            <h3>������ الدودة</h3>
+            <p>لعبة الثعبان الكلاسيكية</p>
+        </div>
+        <div class="game-card" onclick="openGame('chicken')">
+            <h3>������ الدجاجة</h3>
+            <p>اقطع الطريق وتجنب السيارات</p>
+        </div>
+        <div class="game-card" onclick="openGame('clicker')">
+            <h3>������ العداد التفاعلي</h3>
+            <p>اضغط وزد النقاط مع أصوات ممتعة</p>
+        </div>
+        <div class="game-card" onclick="openGame('brick')">
+            <h3>������ تكسير الطوب</h3>
+            <p>لعبة الأركيد الشهيرة</p>
+        </div>
+    </div>
+
+    <!-- حاوية عرض اللعبة -->
+    <div class="game-screen" id="gameScreen">
+        <div class="score-board" id="scoreBoard">النقاط: 0</div>
+        <div id="gameContainer"></div>
+        <button class="back-btn" onclick="closeGame()">الرجوع للقائمة</button>
+    </div>
+
+    <!-- إعلان Adsterra السفلي -->
+    <div class="ad-container">
+        <script>
+            atOptions = {
+                'key' : 'e4b3426014b6de4b69856962027e3a76',
+                'format' : 'iframe',
+                'height' : 250,
+                'width' : 300,
+                'params' : {}
+            };
+        </script>
+        <script src="https://www.highperformanceformat.com/e4b3426014b6de4b69856962027e3a76/invoke.js"></script>
     </div>
 
     <script>
-        let count = 0;
-
-        // الترحيب الصوتي تلقائياً عند فتح الموقع
+        // الترحيب الصوتي عند الدخول
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                speakWelcome();
+                if ('speechSynthesis' in window) {
+                    let utterance = new SpeechSynthesisUtterance("نورت الموقع يا سيدها");
+                    utterance.lang = 'ar-SA';
+                    window.speechSynthesis.speak(utterance);
+                }
             }, 500);
+
+            // محاكاة تغير عدد المتواجدين أونلاين عشوائياً
+            setInterval(() => {
+                let randomCount = Math.floor(Math.random() * 15) + 8;
+                document.getElementById('onlineCount').innerText = randomCount;
+            }, 5000);
         });
 
-        function speakWelcome() {
-            if ('speechSynthesis' in window) {
-                let utterance = new SpeechSynthesisUtterance("نورت الموقع يا سيدها");
-                utterance.lang = 'ar-SA'; // اللهجة العربية
-                utterance.rate = 1.0;
-                window.speechSynthesis.speak(utterance);
+        let currentGame = null;
+        let gameInterval = null;
+
+        function openGame(type) {
+            document.getElementById('menuGrid').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+            currentGame = type;
+            
+            const container = document.getElementById('gameContainer');
+            container.innerHTML = '';
+
+            if (type === 'snake') {
+                container.innerHTML = '<canvas id="snakeCanvas" width="300" height="300"></canvas>';
+                startSnakeGame();
+            } else if (type === 'chicken') {
+                container.innerHTML = '<canvas id="chickenCanvas" width="300" height="300"></canvas><p style="font-size:11px; color:#94a3b8; margin-top:5px;">اضغط على الشاشة لتحريك الدجاجة يميناً ويساراً</p>';
+                startChickenGame();
+            } else if (type === 'clicker') {
+                container.innerHTML = `
+                    <div id="clickerBox" onclick="clickAction()" style="background:#1a2642; padding:30px; border-radius:12px; cursor:pointer; border:1px solid #2563eb;">
+                        <h2 id="clickNum" style="font-size:40px; color:#22c55e;">0</h2>
+                        <p style="color:#94a3b8; font-size:12px; margin-top:5px;">اضغط هنا لزيادة العد</p>
+                    </div>`;
+                document.getElementById('scoreBoard').innerText = "عداد الضغطات";
+            } else if (type === 'brick') {
+                container.innerHTML = '<canvas id="brickCanvas" width="300" height="300"></canvas>';
+                startBrickGame();
             }
         }
 
-        // دالة زيادة العداد مع إصدار صوت تفاعلي (Bip)
-        function incrementCounter() {
-            count++;
-            document.getElementById('counter').innerText = count;
-            playClickSound();
+        function closeGame() {
+            clearInterval(gameInterval);
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('menuGrid').style.display = 'grid';
+            document.getElementById('scoreBoard').innerText = "النقاط: 0";
         }
 
-        // مولد صوت تفاعلي يشبه النقرة أو طيط اللعبة برمجياً بدون الحاجة لملفات خارجية
-        function playClickSound() {
+        // --- 1. لعبة الدودة (Snake) ---
+        function startSnakeGame() {
+            const canvas = document.getElementById('snakeCanvas');
+            const ctx = canvas.getContext('2d');
+            let box = 15;
+            let snake = [{x: 10 * box, y: 10 * box}];
+            let food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
+            let score = 0;
+            let d = "RIGHT";
+
+            document.onkeydown = event => {
+                if(event.keyCode == 37 && d != "RIGHT") d = "LEFT";
+                else if(event.keyCode == 38 && d != "DOWN") d = "UP";
+                else if(event.keyCode == 39 && d != "LEFT") d = "RIGHT";
+                else if(event.keyCode == 40 && d != "UP") d = "DOWN";
+            };
+
+            // تحكم لمسي بسيط للجوال
+            canvas.onclick = () => {
+                if(d === "RIGHT") d = "DOWN";
+                else if(d === "DOWN") d = "LEFT";
+                else if(d === "LEFT") d = "UP";
+                else if(d === "UP") d = "RIGHT";
+            };
+
+            gameInterval = setInterval(() => {
+                ctx.fillStyle = "#000";
+                ctx.fillRect(0, 0, 300, 300);
+
+                for(let i = 0; i < snake.length; i++) {
+                    ctx.fillStyle = (i == 0) ? "#22c55e" : "#15803d";
+                    ctx.fillRect(snake[i].x, snake[i].y, box, box);
+                }
+
+                ctx.fillStyle = "#ef4444";
+                ctx.fillRect(food.x, food.y, box, box);
+
+                let snakeX = snake[0].x;
+                let snakeY = snake[0].y;
+
+                if(d == "LEFT") snakeX -= box;
+                if(d == "UP") snakeY -= box;
+                if(d == "RIGHT") snakeX += box;
+                if(d == "DOWN") snakeY += box;
+
+                if(snakeX == food.x && snakeY == food.y) {
+                    score++;
+                    document.getElementById('scoreBoard').innerText = "النقاط: " + score;
+                    food = {x: Math.floor(Math.random()*19)*box, y: Math.floor(Math.random()*19)*box};
+                } else {
+                    snake.pop();
+                }
+
+                let newHead = {x: snakeX, y: snakeY};
+
+                if(snakeX < 0 || snakeX >= 300 || snakeY < 0 || snakeY >= 300 || collision(newHead, snake)) {
+                    clearInterval(gameInterval);
+                    alert("انتهت اللعبة! نقاطك: " + score);
+                    closeGame();
+                }
+
+                snake.unshift(newHead);
+            }, 120);
+        }
+
+        function collision(head, array) {
+            for(let i = 0; i < array.length; i++) {
+                if(head.x == array[i].x && head.y == array[i].y) return true;
+            }
+            return false;
+        }
+
+        // --- 2. لعبة الدجاجة والسيارات (Crossy Chicken) ---
+        function startChickenGame() {
+            const canvas = document.getElementById('chickenCanvas');
+            const ctx = canvas.getContext('2d');
+            let chickenX = 135, chickenY = 260;
+            let score = 0;
+            let cars = [
+                {x: 0, y: 100, speed: 2},
+                {x: 200, y: 180, speed: -3}
+            ];
+
+            canvas.onclick = () => {
+                chickenX += 30;
+                if(chickenX > 270) chickenX = 30;
+            };
+
+            document.onkeydown = e => {
+                if(e.keyCode == 37) chickenX -= 15;
+                if(e.keyCode == 39) chickenX += 15;
+                if(e.keyCode == 38) { chickenY -= 20; score += 5; document.getElementById('scoreBoard').innerText = "النقاط: " + score; }
+            };
+
+            gameInterval = setInterval(() => {
+                ctx.fillStyle = "#1e293b";
+                ctx.fillRect(0, 0, 300, 300);
+
+                // رسم الشارع
+                ctx.fillStyle = "#334155";
+                ctx.fillRect(0, 80, 300, 140);
+
+                // تحريك ورسم السيارات
+                ctx.fillStyle = "#ef4444";
+                cars.forEach(car => {
+                    car.x += car.speed;
+                    if(car.x > 300) car.x = -40;
+                    if(car.x < -40) car.x = 300;
+                    ctx.fillRect(car.x, car.y, 40, 20);
+
+                    // فحص الاصطدام
+                    if(chickenX < car.x + 40 && chickenX + 20 > car.x && chickenY < car.y + 20 && chickenY + 20 > car.y) {
+                        clearInterval(gameInterval);
+                        alert("دستها السيارة! ������ مجموع نقاطك: " + score);
+                        closeGame();
+                    }
+                });
+
+                // رسم الدجاجة ������
+                ctx.fillStyle = "#facc15";
+                ctx.fillRect(chickenX, chickenY, 20, 20);
+
+                if(chickenY < 20) {
+                    score += 50;
+                    chickenY = 260;
+                }
+            }, 50);
+        }
+
+        // --- 3. لعبة العداد ---
+        let cNum = 0;
+        function clickAction() {
+            cNum++;
+            document.getElementById('clickNum').innerText = cNum;
             try {
                 let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                let oscillator = audioCtx.createOscillator();
-                let gainNode = audioCtx.createGain();
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch(e){}
+        }
 
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // تردد صوتي مرح (نغمة D5)
-                oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+        // --- 4. لعبة تكسير الطوب (Brick Breaker) ---
+        function startBrickGame() {
+            const canvas = document.getElementById('brickCanvas');
+            const ctx = canvas.getContext('2d');
+            let x = canvas.width/2, y = canvas.height-30, dx = 2, dy = -2;
+            let ballRadius = 6, paddleHeight = 8, paddleWidth = 60;
+            let paddleX = (canvas.width-paddleWidth)/2;
+            let score = 0;
 
-                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+            canvas.onmousemove = e => {
+                let rect = canvas.getBoundingClientRect();
+                let relativeX = e.clientX - rect.left;
+                if(relativeX > 0 && relativeX < canvas.width) {
+                    paddleX = relativeX - paddleWidth/2;
+                }
+            };
 
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
+            gameInterval = setInterval(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#22c55e";
+                ctx.beginPath();
+                ctx.arc(x, y, ballRadius, 0, Math.PI*2);
+                ctx.fill();
+                ctx.closePath();
 
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.08);
-            } catch (e) {
-                // تجاوز الخطأ في حال لم يدعم المتصفح الصوت التلقائي قبل التفاعل
-            }
+                ctx.fillStyle = "#2563eb";
+                ctx.fillRect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
+
+                if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) dx = -dx;
+                if(y + dy < ballRadius) dy = -dy;
+                else if(y + dy > canvas.height-ballRadius) {
+                    if(x > paddleX && x < paddleX + paddleWidth) {
+                        dy = -dy;
+                        score++;
+                        document.getElementById('scoreBoard').innerText = "النقاط: " + score;
+                    } else {
+                        clearInterval(gameInterval);
+                        alert("انتهت اللعبة! نقاطك: " + score);
+                        closeGame();
+                    }
+                }
+
+                x += dx;
+                y += dy;
+            }, 30);
         }
     </script>
 
