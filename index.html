@@ -3,13 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فحص سرعة الإنترنت المتقدم</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>لعبة العداد والإعلانات</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* حاوية الإعلان */
+        .ad-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #131b2e;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #1f2d4a;
+        }
+
+        /* صندوق العداد التفاعلي */
+        .clicker-box {
+            background-color: #131b2e;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+            border: 2px solid #2563eb;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s ease, background-color 0.2s ease;
+            margin: 15px 0;
+        }
+
+        .clicker-box:active {
+            transform: scale(0.95);
+            background-color: #1a2642;
+        }
+
+        h1 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #f8fafc;
+        }
+
+        .counter-display {
+            font-size: 60px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+
+        .hint {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex flex-col justify-between items-center p-4">
+<body>
 
-    <!-- مساحة إعلانية علوية -->
-    <div class="w-full flex justify-center my-2">
+    <!-- إعلان Adsterra (مقاس 300x250) -->
+    <div class="ad-container">
         <script>
             atOptions = {
                 'key' : 'e4b3426014b6de4b69856962027e3a76',
@@ -22,74 +91,63 @@
         <script src="https://www.highperformanceformat.com/e4b3426014b6de4b69856962027e3a76/invoke.js"></script>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl text-center max-w-md w-full border border-gray-700">
-        <h1 class="text-2xl font-bold mb-6 text-blue-400">اختبار سرعة الإنترنت</h1>
-        
-        <div id="status" class="text-lg text-gray-300 mb-6">اضغط على الزر أدناه لبدء الفحص</div>
-        
-        <div class="text-4xl font-extrabold text-green-400 mb-8" id="speedResult">0.00 <span class="text-lg text-gray-400">Mbps</span></div>
-        
-        <button onclick="startSpeedTest()" id="testBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-xl transition duration-300 shadow-lg">
-            ابدأ الفحص الآن
-        </button>
-    </div>
-
-    <!-- مساحة إعلانية سفلية -->
-    <div class="w-full flex justify-center my-2">
-        <script>
-            atOptions = {
-                'key' : 'e4b3426014b6de4b69856962027e3a76',
-                'format' : 'iframe',
-                'height' : 250,
-                'width' : 300,
-                'params' : {}
-            };
-        </script>
-        <script src="https://www.highperformanceformat.com/e4b3426014b6de4b69856962027e3a76/invoke.js"></script>
+    <!-- صندوق العداد -->
+    <div class="clicker-box" onclick="incrementCounter()">
+        <h1>اضغط هنا لزيادة العداد</h1>
+        <div class="counter-display" id="counter">0</div>
+        <div class="hint">كل ضغطة تحتسب وتصدر صوتاً!</div>
     </div>
 
     <script>
-        async function startSpeedTest() {
-            const btn = document.getElementById('testBtn');
-            const status = document.getElementById('status');
-            const result = document.getElementById('speedResult');
-            
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            status.textContent = "جاري قياس سرعة الإنترنت...";
-            result.textContent = "0.00 Mbps";
+        let count = 0;
 
-            const startTime = performance.now();
-            
-            // ملف بحجم متوسط لتحميله بغرض القياس
-            const imageAddr = "https://upload.wikimedia.org/wikipedia/commons/3/3f/Placeholder_view_project.svg";
-            
+        // الترحيب الصوتي تلقائياً عند فتح الموقع
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                speakWelcome();
+            }, 500);
+        });
+
+        function speakWelcome() {
+            if ('speechSynthesis' in window) {
+                let utterance = new SpeechSynthesisUtterance("نورت الموقع يا سيدها");
+                utterance.lang = 'ar-SA'; // اللهجة العربية
+                utterance.rate = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // دالة زيادة العداد مع إصدار صوت تفاعلي (Bip)
+        function incrementCounter() {
+            count++;
+            document.getElementById('counter').innerText = count;
+            playClickSound();
+        }
+
+        // مولد صوت تفاعلي يشبه النقرة أو طيط اللعبة برمجياً بدون الحاجة لملفات خارجية
+        function playClickSound() {
             try {
-                // تحميل الملف بالتوازي مع فرض عداد زمني لا يقل عن 9 ثوانٍ (9000 ملي ثانية)
-                const downloadPromise = fetch(imageAddr + "?cache=" + Math.random());
-                const timerPromise = new Promise(resolve => setTimeout(resolve, 9000));
-                
-                const [response] = await Promise.all([downloadPromise, timerPromise]);
-                const blob = await response.blob();
-                
-                const endTime = performance.now();
-                const duration = (endTime - startTime) / 1000; // بالثواني
-                
-                // حساب السرعة (حجم افتراضي دقيق للعملية)
-                const fileSizeBits = blob.size * 8;
-                const speedMbps = ((fileSizeBits / duration) / 1024 / 1024) * 15; // عامل معايرة لتكون النتائج واقعية
-                
-                status.textContent = "اكتمل الفحص بنجاح!";
-                result.textContent = speedMbps.toFixed(2) + " Mbps";
-            } catch (err) {
-                status.textContent = "فشل القياس، تحقق من اتصالك.";
-                result.textContent = "0.00 Mbps";
-            } finally {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let oscillator = audioCtx.createOscillator();
+                let gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(587.33, audioCtx.currentTime); // تردد صوتي مرح (نغمة D5)
+                oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+
+                gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.08);
+            } catch (e) {
+                // تجاوز الخطأ في حال لم يدعم المتصفح الصوت التلقائي قبل التفاعل
             }
         }
     </script>
+
 </body>
 </html>
